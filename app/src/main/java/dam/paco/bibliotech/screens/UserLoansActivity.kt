@@ -89,9 +89,6 @@ class UserLoansActivity : AppCompatActivity() {
         }
         rvLoans.layoutManager = LinearLayoutManager(this)
         rvLoans.adapter = loansAdapter
-
-
-
     }
 
     private fun initListeners() {
@@ -113,10 +110,7 @@ class UserLoansActivity : AppCompatActivity() {
             val loans = getAllLoans()
 
             if (loans != null) {
-                if (allLoansList != null) {
-                    allLoansList = loans
-                }
-
+                allLoansList = loans
                 loansList.clear()
                 loansList.addAll(loans)
 
@@ -138,21 +132,12 @@ class UserLoansActivity : AppCompatActivity() {
     }
 
     private suspend fun getAllLoans(): List<Loan>? {
-        return try {
-            val response = withContext(Dispatchers.IO) {
-                apiService.getLoansByUser(user.id).execute()
-            }
-
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                println("Error en la respuesta: ${response.code()} - ${response.message()}")
-                null
-            }
+        try {
+            return apiService.getLoansByUser(user.id)
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error al obtener préstamos: ${e.message}")
-            null
+            return null
         }
     }
 
@@ -223,27 +208,23 @@ class UserLoansActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.red))
     }
 
-    suspend fun returnLoan(loan: Loan) {
-        try {
-            val response = apiService.returnLoan(loan.id)
+    private fun returnLoan(loan: Loan) {
 
-            if (response.isSuccessful) {
-                runOnUiThread {
+        lifecycleScope.launch {
+            try {
+                val response = apiService.returnLoan(loan.id)
+
+                if (response.isSuccessful) {
                     Toast.makeText(this@UserLoansActivity, "Successfully returned loan", Toast.LENGTH_SHORT).show()
 
                     val intent = Intent(this@UserLoansActivity, BookListActivity::class.java)
                     intent.putExtra(Constants.USER, user)
                     startActivity(intent)
                     finish()
-                }
-            } else {
-                runOnUiThread {
+                } else {
                     Toast.makeText(this@UserLoansActivity, "Error returning loan: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
-            }
-
-        } catch (e: Exception) {
-            runOnUiThread {
+            } catch (e: Exception) {
                 Toast.makeText(this@UserLoansActivity, "Error returning loan: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }

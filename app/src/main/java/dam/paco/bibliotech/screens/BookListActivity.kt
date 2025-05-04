@@ -58,7 +58,7 @@ class BookListActivity : AppCompatActivity() {
         initComponents()
         preloadImages()
         initListeners()
-        fetchAvailableBooks()
+        fetchBooks { getAvailableBooks() }
 
     }
 
@@ -94,13 +94,13 @@ class BookListActivity : AppCompatActivity() {
         btnAvailableBooks.setOnClickListener {
             println("AVAILABLE")
             switchButtons(btnAvailableBooks, btnBooksInUse)
-            fetchAvailableBooks()
+            fetchBooks { getAvailableBooks() }
         }
 
         btnBooksInUse.setOnClickListener {
             println("IN USE")
             switchButtons(btnBooksInUse, btnAvailableBooks)
-            fetchUnavailableBooks()
+            fetchBooks { getUnavailableBooks() }
         }
 
         svBookFinder.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -115,45 +115,28 @@ class BookListActivity : AppCompatActivity() {
         })
     }
 
-    private fun fetchAvailableBooks() {
+    private fun fetchBooks(fetcher: suspend () -> List<Book>?) {
         lifecycleScope.launch {
-            val books = getAvailableBooks()
-            if (books != null) {
-                booksList.clear()
-                booksList.addAll(books)
+            try {
+                val books = fetcher()
+                if (books != null) {
+                    booksList.clear()
+                    booksList.addAll(books)
 
-                books.forEach { book ->
-                    if (!book.image.isNullOrBlank()) {
-                        Glide.with(this@BookListActivity)
-                            .load(book.image)
-                            .preload()
+                    books.forEach { book ->
+                        if (!book.image.isNullOrBlank()) {
+                            Glide.with(this@BookListActivity)
+                                .load(book.image)
+                                .preload()
+                        }
                     }
+
+                    booksAdapter.notifyDataSetChanged()
+                } else {
+                    Toast.makeText(this@BookListActivity, "Error al cargar los libros", Toast.LENGTH_SHORT).show()
                 }
-
-                booksAdapter.notifyDataSetChanged()
-            } else {
-                Toast.makeText(this@BookListActivity, "Error al cargar los libros", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun fetchUnavailableBooks() {
-        lifecycleScope.launch {
-            val books = getUnavailableBooks()
-            if (books != null) {
-                booksList.clear()
-                booksList.addAll(books)
-
-                books.forEach { book ->
-                    if (!book.image.isNullOrBlank()) {
-                        Glide.with(this@BookListActivity)
-                            .load(book.image)
-                            .preload()
-                    }
-                }
-
-                booksAdapter.notifyDataSetChanged()
-            } else {
+            } catch (e: Exception) {
+                e.printStackTrace()
                 Toast.makeText(this@BookListActivity, "Error al cargar los libros", Toast.LENGTH_SHORT).show()
             }
         }
@@ -178,59 +161,32 @@ class BookListActivity : AppCompatActivity() {
     }
 
     private suspend fun getAllBooks(): List<Book>? {
-        return try {
-            val response = withContext(Dispatchers.IO) {
-                apiService.getAllBooks().execute()
-            }
-
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                println("Error en la respuesta: ${response.code()} - ${response.message()}")
-                null
-            }
+        try {
+            return apiService.getAllBooks()
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error al obtener libros: ${e.message}")
-            null
+            return null
         }
     }
 
     private suspend fun getAvailableBooks(): List<Book>? {
-        return try {
-            val response = withContext(Dispatchers.IO) {
-                apiService.getAvailableBooks().execute()
-            }
-
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                println("Error en la respuesta: ${response.code()} - ${response.message()}")
-                null
-            }
+        try {
+            return apiService.getAvailableBooks()
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error al obtener libros: ${e.message}")
-            null
+            return null
         }
     }
 
     private suspend fun getUnavailableBooks(): List<Book>? {
-        return try {
-            val response = withContext(Dispatchers.IO) {
-                apiService.getUnavailableBooks().execute()
-            }
-
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                println("Error en la respuesta: ${response.code()} - ${response.message()}")
-                null
-            }
+        try {
+            return apiService.getUnavailableBooks()
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error al obtener libros: ${e.message}")
-            null
+            return null
         }
     }
 

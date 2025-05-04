@@ -19,9 +19,7 @@ import dam.paco.bibliotech.data.model.Constants
 import dam.paco.bibliotech.data.model.User
 import dam.paco.bibliotech.data.service.ApiService
 import dam.paco.bibliotech.data.service.RetrofitClient
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
 
@@ -33,7 +31,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var ibGitlab: ImageButton
     private lateinit var ibLinkedin: ImageButton
 
-    val apiService = RetrofitClient.createService(ApiService::class.java)
+    private val apiService = RetrofitClient.createService(ApiService::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,24 +63,35 @@ class LoginActivity : AppCompatActivity() {
             val password = etPassword.text.toString()
             println("Username: $username -> Password: $password")
 
+            if (username.isBlank() || password.isBlank()) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            tvIncorrectCredentials.visibility = View.GONE
+            btnLogin.isEnabled = false
+
             lifecycleScope.launch {
-                val user = loginUser(username, password)
-                if (user != null) {
-                    println("User logged in: $user")
+                try {
+                    val user = loginUser(username, password)
+                    if (user != null) {
+                        println("User logged in: $user")
+                        Toast.makeText(this@LoginActivity, "Welcome, ${user.name}!", Toast.LENGTH_SHORT).show()
 
-                    user.let {
-                        Toast.makeText(this@LoginActivity, "Welcome, ${it.name}!", Toast.LENGTH_SHORT).show()
-                    }
-
-                    val intent = Intent(this@LoginActivity, MenuActivity::class.java)
-                    intent.putExtra(Constants.USER, user)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    withContext(Dispatchers.Main) {
+                        val intent = Intent(this@LoginActivity, MenuActivity::class.java)
+                        intent.putExtra(Constants.USER, user)
+                        startActivity(intent)
+                        finish()
+                    } else {
                         tvIncorrectCredentials.visibility = View.VISIBLE
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this@LoginActivity, "Unexpected error. Try again.", Toast.LENGTH_SHORT).show()
+                } finally {
+                    btnLogin.isEnabled = true
                 }
+
             }
         }
 
@@ -108,23 +117,16 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    suspend fun loginUser(username: String, password: String) : User? {
+    private suspend fun loginUser(username: String, password: String) : User? {
         try {
-            val response = withContext(Dispatchers.IO) {
-                apiService.login(username, password).execute()
-            }
+            val user = apiService.login(username, password)
+            println("Login successful: $user")
 
-            if (response.isSuccessful) {
-                val responseBody = response.body()
-                println("Login successful: $responseBody")
-                return responseBody
-            } else {
-                println("Login failed: ${response.code()} - ${response.message()}")
-                return null
-            }
+            return user
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Error occurred: ${e.message}")
+            println("Login error: ${e.message}")
+
             return null
         }
     }

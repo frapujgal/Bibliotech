@@ -4,9 +4,7 @@ import dam.paco.bibliotech.data.model.Book
 import dam.paco.bibliotech.data.model.Comment
 import dam.paco.bibliotech.data.model.Loan
 import dam.paco.bibliotech.data.model.User
-import retrofit2.Call
 import retrofit2.Response
-import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -16,39 +14,31 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("users/login")
-    fun login(
-        @Query("username") username: String,
-        @Query("password") password: String
-    ): Call<User>
+    suspend fun login(@Query("username") username: String, @Query("password") password: String): User
 
     @GET("books")
-    fun getAllBooks(): Call<List<Book>>
+    suspend fun getAllBooks(): List<Book>
 
     @GET("books/")
-    fun getBookById(
-        @Query("bookId") bookId: Int
-    ): Call<Book>
+    suspend fun getBookById(@Query("bookId") bookId: Int): Book
 
     @GET("books/available")
-    fun getAvailableBooks(): Call<List<Book>>
+    suspend fun getAvailableBooks(): List<Book>
 
     @GET("books/unavailable")
-    fun getUnavailableBooks(): Call<List<Book>>
+    suspend fun getUnavailableBooks(): List<Book>
 
     @GET("comments")
     suspend fun getCommentsByBook(@Query("book") bookId: Int): List<Comment>
 
     @GET("loans")
-    fun getAllLoans(): Call<List<Loan>>
+    suspend fun getAllLoans(): List<Loan>
 
     @GET("loans/user/{userId}")
-    fun getLoansByUser(@Path("userId") userId: Int): Call<List<Loan>>
+    suspend fun getLoansByUser(@Path("userId") userId: Int): List<Loan>
 
     @POST("loans")
-    suspend fun createLoan(
-        @Query("bookId") bookId: Int,
-        @Query("userId") userId: Int
-    ): Loan
+    suspend fun createLoan(@Query("bookId") bookId: Int, @Query("userId") userId: Int): Loan
 
     @PUT("loans/{id}/return")
     suspend fun returnLoan(@Path("id") loanId: Int): Response<Unit>

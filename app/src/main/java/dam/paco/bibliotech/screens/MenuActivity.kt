@@ -58,7 +58,7 @@ class MenuActivity : AppCompatActivity() {
         }
 
         cvMyProfile.setOnClickListener {
-
+            Toast.makeText(this, "Profile screen coming soon!", Toast.LENGTH_SHORT).show()
         }
     }
 }

@@ -22,7 +22,9 @@ import dam.paco.bibliotech.data.model.Constants
 import dam.paco.bibliotech.data.model.User
 import dam.paco.bibliotech.data.service.ApiService
 import dam.paco.bibliotech.data.service.RetrofitClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -81,7 +83,6 @@ class BookDetailActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-
         lifecycleScope.launch {
             val comments = loadCommentsForBook(book.id)
             book.comments = comments
@@ -92,25 +93,23 @@ class BookDetailActivity : AppCompatActivity() {
             } else {
                 tvComments.text = "0"
             }
-        }
 
-        println(book.image)
+            Glide.with(this@BookDetailActivity)
+                .load(book.image)
+                .error(R.drawable.logo)
+                .into(ivBookImage)
 
-        Glide.with(this)
-            .load(book.image)
-            .error(R.drawable.logo)
-            .into(ivBookImage)
+            tvBookTitle.text = book.title
+            tvBookAuthor.text = book.author
+            tvBookGenre.text = book.genre
+            tvBookYear.text = book.publicationYear.toString()
+            tvBookSynopsis.text = book.synopsis
 
-        tvBookTitle.text = book.title
-        tvBookAuthor.text = book.author
-        tvBookGenre.text = book.genre
-        tvBookYear.text = book.publicationYear.toString()
-        tvBookSynopsis.text = book.synopsis
-
-        if (book.available == false) {
-            val colorApagado = ContextCompat.getColor(btnLoan.context, R.color.lightGray)
-            btnLoan.backgroundTintList = ColorStateList.valueOf(colorApagado)
-            btnLoan.isEnabled = false
+            if (book.available == false) {
+                val colorApagado = ContextCompat.getColor(btnLoan.context, R.color.lightGray)
+                btnLoan.backgroundTintList = ColorStateList.valueOf(colorApagado)
+                btnLoan.isEnabled = false
+            }
         }
 
     }
@@ -130,11 +129,11 @@ class BookDetailActivity : AppCompatActivity() {
         return String.format("%.1f", totalRatings.toDouble() / book.comments.size)
     }
 
-    suspend fun loadCommentsForBook(bookId: Int): List<Comment> {
-        return try {
-            return apiService.getCommentsByBook(bookId) ?: emptyList()
+    private suspend fun loadCommentsForBook(bookId: Int): List<Comment> {
+        try {
+            return apiService.getCommentsByBook(bookId)
         } catch (e: Exception) {
-            emptyList()
+            return emptyList()
         }
     }
 
@@ -171,10 +170,11 @@ class BookDetailActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.red))
     }
 
-    suspend fun executeLoan(bookId: Int, userId: Int) {
+    private suspend fun executeLoan(bookId: Int, userId: Int) {
         try {
             val loan = apiService.createLoan(bookId, userId)
-            runOnUiThread {
+
+            withContext(Dispatchers.Main) {
                 Toast.makeText(this@BookDetailActivity, "Successfully created loan (ID: ${loan.id})", Toast.LENGTH_SHORT).show()
                 btnLoan.isEnabled = false
                 btnLoan.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(btnLoan.context, R.color.lightGray))
@@ -185,7 +185,7 @@ class BookDetailActivity : AppCompatActivity() {
                 finish()
             }
         } catch (e: Exception) {
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 Toast.makeText(this@BookDetailActivity, "Error creating loan", Toast.LENGTH_SHORT).show()
             }
         }
