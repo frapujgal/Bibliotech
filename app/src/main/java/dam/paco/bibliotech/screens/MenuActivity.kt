@@ -58,7 +58,9 @@ class MenuActivity : AppCompatActivity() {
         }
 
         cvMyProfile.setOnClickListener {
-            Toast.makeText(this, "Profile screen coming soon!", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this@MenuActivity, ProfileActivity::class.java)
+            intent.putExtra(Constants.USER, user)
+            startActivity(intent)
         }
     }
 }

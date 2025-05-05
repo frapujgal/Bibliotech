@@ -15,5 +15,6 @@ data class User(
     val password: String,
     val points: Int,
     val registrationDate: Date,
+    val image: String,
     val comments: List<Comment>
 ) : Serializable
