@@ -2,7 +2,6 @@ package dam.paco.bibliotech.data.model
 
 import java.io.Serializable
 import java.util.Date
-import java.time.LocalDate
 
 data class User(
     val id: Int,
@@ -16,5 +15,5 @@ data class User(
     val points: Int,
     val registrationDate: Date,
     val image: String,
-    val comments: List<Comment>
+    @Transient val comments: List<Comment> = emptyList()
 ) : Serializable

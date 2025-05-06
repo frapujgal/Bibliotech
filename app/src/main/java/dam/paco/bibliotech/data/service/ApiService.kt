@@ -5,7 +5,9 @@ import dam.paco.bibliotech.data.model.Comment
 import dam.paco.bibliotech.data.model.Loan
 import dam.paco.bibliotech.data.model.User
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -15,6 +17,9 @@ interface ApiService {
 
     @GET("users/login")
     suspend fun login(@Query("username") username: String, @Query("password") password: String): User
+
+    @PATCH("users/{id}")
+    suspend fun modifyUser(@Path("id") id: Int, @Body user: User): User
 
     @GET("books")
     suspend fun getAllBooks(): List<Book>
@@ -42,6 +47,7 @@ interface ApiService {
 
     @PUT("loans/{id}/return")
     suspend fun returnLoan(@Path("id") loanId: Int): Response<Unit>
+
 
 
 }
