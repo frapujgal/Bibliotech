@@ -6,8 +6,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
+
+    // ngrok http http://localhost:8080
+    // AÑADIR LA IP RECIBIDA A LA SIGUIENTE URL
+    //private const val BASE_URL = "https://773e-2a0c-5a82-c100-2b00-85f2-ba80-15c4-749.ngrok-free.app/api/"
     private const val BASE_URL = "http://192.168.1.205:8080/api/"
-    //private const val BASE_URL = "https://87c8-2a0c-5a82-c009-f200-be2e-def7-bc0e-84bc.ngrok-free.app/api/"
 
     private val gson: Gson = GsonBuilder()
         .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
