@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import dam.paco.bibliotech.R
 import dam.paco.bibliotech.data.model.Constants
 import dam.paco.bibliotech.data.model.User
@@ -45,6 +47,36 @@ class LoginActivity : AppCompatActivity() {
 
         initComponents()
         initListeners()
+
+        preloadImages()
+
+    }
+
+    private fun preloadImages() {
+
+        lifecycleScope.launch {
+            val users = apiService.getAllUsers()
+            val books = apiService.getAllBooks()
+
+            users.forEach { user ->
+                Glide.with(applicationContext)
+                    .load(user.image)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .preload()
+            }
+
+            println("cargados users")
+
+            books.forEach { book ->
+                Glide.with(applicationContext)
+                    .load(book.image)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .preload()
+            }
+
+            println("cargados libros")
+        }
+
     }
 
     private fun initComponents() {

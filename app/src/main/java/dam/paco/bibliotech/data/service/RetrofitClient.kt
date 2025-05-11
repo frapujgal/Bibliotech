@@ -10,7 +10,7 @@ object RetrofitClient {
     //private const val BASE_URL = "https://87c8-2a0c-5a82-c009-f200-be2e-def7-bc0e-84bc.ngrok-free.app/api/"
 
     private val gson: Gson = GsonBuilder()
-        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") // ISO 8601 compatible con Spring
+        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         .create()
 
     private val retrofit: Retrofit by lazy {

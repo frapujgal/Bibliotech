@@ -4,6 +4,8 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
+import android.widget.RatingBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -178,6 +180,7 @@ class UserLoansActivity : AppCompatActivity() {
     }
 
     private fun showReturnDialog(loan: Loan) {
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         val builder = AlertDialog.Builder(this)
 
         builder.setTitle("Confirm return")
@@ -187,14 +190,15 @@ class UserLoansActivity : AppCompatActivity() {
             Title: ${loan.book.title}
             Author: ${loan.book.author}
             
-            Loan date: ${loan.loanDate}
-            Max return date: ${loan.maxReturnDate}
+            Loan date: ${dateFormat.format(loan.loanDate)}
+            Max return date: ${dateFormat.format(loan.maxReturnDate)}
             """.trimIndent())
 
         builder.setPositiveButton("Return") { dialog, which ->
             lifecycleScope.launch {
                 println("voy a devolver")
-                returnLoan(loan)
+                dialog.dismiss()
+                showReviewDialog(loan)
             }
         }
 
@@ -208,8 +212,40 @@ class UserLoansActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.red))
     }
 
-    private fun returnLoan(loan: Loan) {
+    private fun showReviewDialog(loan: Loan) {
 
+        val dialogView = layoutInflater.inflate(R.layout.dialog_comment_rating, null)
+        val commentEditText = dialogView.findViewById<EditText>(R.id.etComment)
+        val ratingBar = dialogView.findViewById<RatingBar>(R.id.rbRating)
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Leave a Comment & Rating")
+        builder.setView(dialogView)
+
+        builder.setPositiveButton("Submit") { _, _ ->
+            val comment = commentEditText.text.toString()
+            val rating = ratingBar.rating.toInt()
+
+            lifecycleScope.launch {
+                println("Returning with comment: $comment and rating: $rating")
+                addReview(loan, comment, rating)
+                returnLoan(loan)
+            }
+        }
+
+        builder.setNegativeButton("Skip") { d, _ ->
+            d.dismiss()
+            returnLoan(loan)
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(ContextCompat.getColor(this, R.color.green))
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(ContextCompat.getColor(this, R.color.red))
+
+    }
+
+    private fun returnLoan(loan: Loan) {
         lifecycleScope.launch {
             try {
                 val response = apiService.returnLoan(loan.id)
@@ -217,7 +253,7 @@ class UserLoansActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     Toast.makeText(this@UserLoansActivity, "Successfully returned loan", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this@UserLoansActivity, BookListActivity::class.java)
+                    val intent = Intent(this@UserLoansActivity, UserLoansActivity::class.java)
                     intent.putExtra(Constants.USER, user)
                     startActivity(intent)
                     finish()
@@ -227,6 +263,44 @@ class UserLoansActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Toast.makeText(this@UserLoansActivity, "Error returning loan: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun returnLoanWithRating(loan: Loan, comment: String, rating: Int) {
+        lifecycleScope.launch {
+            try {
+                val response = apiService.returnLoan(loan.id)
+
+                if (response.isSuccessful) {
+                    Toast.makeText(this@UserLoansActivity, "Successfully returned loan", Toast.LENGTH_SHORT).show()
+
+                    addReview(loan, comment, rating)
+
+                    val intent = Intent(this@UserLoansActivity, UserLoansActivity::class.java)
+                    intent.putExtra(Constants.USER, user)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this@UserLoansActivity, "Error returning loan: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@UserLoansActivity, "Error returning loan: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private suspend fun addReview(loan: Loan, comment: String, rating: Int) {
+        try {
+            val comment = apiService.addComment(loan.book.id, loan.user.id, comment, rating)
+
+            println("Creado comentario con id: " + comment.id.toString())
+            if (comment != null) {
+                Toast.makeText(this@UserLoansActivity, "Successfully returned loan", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this@UserLoansActivity, "Error leaving comment", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this@UserLoansActivity, "Error leaving comment: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
         }
     }
 

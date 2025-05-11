@@ -3,8 +3,11 @@ package dam.paco.bibliotech.screens
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -14,10 +17,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Visibility
 import com.bumptech.glide.Glide
 import dam.paco.bibliotech.R
 import dam.paco.bibliotech.data.model.Book
 import dam.paco.bibliotech.data.model.Comment
+import dam.paco.bibliotech.data.model.CommentAdapter
 import dam.paco.bibliotech.data.model.Constants
 import dam.paco.bibliotech.data.model.User
 import dam.paco.bibliotech.data.service.ApiService
@@ -35,6 +42,7 @@ class BookDetailActivity : AppCompatActivity() {
 
     private lateinit var book: Book
     private lateinit var user: User
+    private lateinit var comments: List<Comment>
 
     private lateinit var ivBookImage: ImageView
     private lateinit var tvBookTitle: TextView
@@ -44,6 +52,13 @@ class BookDetailActivity : AppCompatActivity() {
     private lateinit var tvBookSynopsis: TextView
     private lateinit var tvComments: TextView
     private lateinit var tvRating: TextView
+    private lateinit var tvLoanedByUser: TextView
+    private lateinit var tvLoanDate: TextView
+    private lateinit var tvMaxReturnDate: TextView
+
+    private lateinit var bookDetails4: LinearLayout
+    private lateinit var bookDetails5: LinearLayout
+    private lateinit var bookDetails6: LinearLayout
 
     private lateinit var btnLoan: Button
 
@@ -80,18 +95,23 @@ class BookDetailActivity : AppCompatActivity() {
         tvComments = findViewById(R.id.tvComments)
         tvRating = findViewById(R.id.tvRating)
         btnLoan = findViewById(R.id.btnLoan)
+
+        tvLoanedByUser = findViewById(R.id.tvLoanedByUser)
+        tvLoanDate = findViewById(R.id.tvLoanDate)
+        tvMaxReturnDate = findViewById(R.id.tvMaxReturnDate)
+        bookDetails4 = findViewById(R.id.bookDetails4)
+        bookDetails5 = findViewById(R.id.bookDetails5)
+        bookDetails6 = findViewById(R.id.bookDetails6)
     }
 
     private fun initUI() {
         lifecycleScope.launch {
-            val comments = loadCommentsForBook(book.id)
+            comments = loadCommentsForBook(book.id)
             book.comments = comments
 
             if (comments.isNotEmpty()) {
-                tvComments.text = book.comments.size.toString()
                 tvRating.text = calcularMedia(book)
-            } else {
-                tvComments.text = "0"
+                bookDetails4.visibility = View.VISIBLE
             }
 
             Glide.with(this@BookDetailActivity)
@@ -106,9 +126,19 @@ class BookDetailActivity : AppCompatActivity() {
             tvBookSynopsis.text = book.synopsis
 
             if (book.available == false) {
+                val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+
                 val colorApagado = ContextCompat.getColor(btnLoan.context, R.color.lightGray)
                 btnLoan.backgroundTintList = ColorStateList.valueOf(colorApagado)
                 btnLoan.isEnabled = false
+
+                val lastLoan = apiService.getLastLoanByBookId(book.id)
+                tvLoanedByUser.text = lastLoan.user.name
+                tvLoanDate.text = dateFormat.format(lastLoan.loanDate)
+                tvMaxReturnDate.text = dateFormat.format(lastLoan.maxReturnDate)
+
+                bookDetails5.visibility = View.VISIBLE
+                bookDetails6.visibility = View.VISIBLE
             }
         }
 
@@ -118,6 +148,11 @@ class BookDetailActivity : AppCompatActivity() {
         btnLoan.setOnClickListener {
             println("LOAN!")
             showLoanDialog()
+        }
+
+        tvComments.setOnClickListener {
+            println("a ver los comentarios")
+            showCommentsDialog()
         }
     }
 
@@ -136,6 +171,20 @@ class BookDetailActivity : AppCompatActivity() {
             return emptyList()
         }
     }
+
+    private fun showCommentsDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_comments, null)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.rvComments)
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = CommentAdapter(comments)
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
 
     private fun showLoanDialog() {
         val builder = AlertDialog.Builder(this)

@@ -15,6 +15,9 @@ import retrofit2.http.Query
 
 interface ApiService {
 
+    @GET("users")
+    suspend fun getAllUsers() : List<User>
+
     @GET("users/login")
     suspend fun login(@Query("username") username: String, @Query("password") password: String): User
 
@@ -42,12 +45,16 @@ interface ApiService {
     @GET("loans/user/{userId}")
     suspend fun getLoansByUser(@Path("userId") userId: Int): List<Loan>
 
+    @GET("loans/last/{bookId}")
+    suspend fun getLastLoanByBookId(@Path("bookId") bookId: Int): Loan
+
     @POST("loans")
     suspend fun createLoan(@Query("bookId") bookId: Int, @Query("userId") userId: Int): Loan
 
     @PUT("loans/{id}/return")
     suspend fun returnLoan(@Path("id") loanId: Int): Response<Unit>
 
-
+    @POST("comments")
+    suspend fun addComment(@Query("bookId") bookId: Int, @Query("userId") userId: Int, @Query("text") text: String, @Query("rating") rating: Int): Comment
 
 }

@@ -173,31 +173,8 @@
         app:layout_constraintTop_toBottomOf="@+id/bookDetails3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="N.COMMENTS"
-                tools:text="N.COMMENTS"
-                android:textColor="@color/white"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvComments"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="NUMERO"
-                android:textColor="@color/white" />
-
-        </LinearLayout>
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -223,6 +200,34 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:gravity="center">
+
+            <!--<TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N.COMMENTS"
+                tools:text="N.COMMENTS"
+                android:textColor="@color/white"
+                android:textStyle="bold" />-->
+
+            <TextView
+                android:id="@+id/tvComments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VIEW COMMENTS"
+                android:textColor="@color/vibrantOrange"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+
+
     </LinearLayout>
 
     <Button
@@ -236,5 +241,99 @@
         android:layout_marginTop="40dp"
         android:text="LOAN"
         android:backgroundTint="@color/darkOrange"/>
+
+    <LinearLayout
+        android:id="@+id/bookDetails5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@+id/btnLoan"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="vertical"
+        android:visibility="invisible" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BOOK LOANED BY"
+            tools:text="BOOK LOANED BY"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvLoanedByUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="AQUI IRIA EL USUARIO"
+            android:textColor="@color/white"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bookDetails6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@+id/bookDetails5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:visibility="invisible" >
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOAN DATE"
+                tools:text="LOAN DATE"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvLoanDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="FECHA"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MAX. RETURN DATE"
+                tools:text="MAX. RETURN DATE"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvMaxReturnDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="FECHA"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
